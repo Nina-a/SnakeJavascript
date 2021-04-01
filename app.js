@@ -4,22 +4,30 @@ const contexte = canvas.getContext('2d');
 // -----------------------------VARIABLES-----------------------------------
 
 // Speed on x
-var speedx = 0;
+let speedx = 0;
 // Speed on y
-var speedy = 10;
+let speedy = 10;
+// apple
+let applex = 0;
+let appley = 0;
+// score
+let score = 0;
 
 let snake = [{x:140, y:150},{x:130, y:150},{x:120, y:150},{x:110, y:150}];
 
 function animation(){
     setTimeout(function(){
         cleanCanvas();
+        drawApple();
         moveForwardSnake();
         drawSnake();
         animation();
-    },1000)
+    },100)
+    
 }
 
 animation();
+createApple();
 
 function cleanCanvas(){
     // Canvas's color
@@ -44,11 +52,18 @@ function drawSnake(){
     })
 }
 
-// ---------------------Création du serpent-----------------------------
 function moveForwardSnake() {
-    const head = {x: snake[0].x + speedx, y: snake[0].y -speedy}
+    const head = {x: snake[0].x + speedx, y: snake[0].y + speedy}
     snake.unshift(head);
+
+    const snakeEatsApple = snake[0].x === applex && snake[0].y === appley;
+    if (snakeEatsApple){
+        score += 10;
+        document.getElementById("score").innerHTML = score
+        createApple();
+    }else{
     snake.pop();
+    }
 }
 
 drawSnake();
@@ -65,11 +80,11 @@ function changeDirection(event){
     const EnTrainDAllerAGauche = speedx === -10;
 
     if (event.code === "ArrowUp" && !enTrainDeDescendre){
-        speedy = 10;
+        speedy = -10;
         speedx = 0;
     }
     else if(event.code === "ArrowDown" && !enTrainDeMonter){
-        speedy = -10;
+        speedy = 10;
         speedx = 0;
     }
     else if(event.code === "ArrowLeft" && !enTrainDAllerADroite){
@@ -81,5 +96,29 @@ function changeDirection(event){
         speedx = 10;        
     }
 }
+// fonction donnant un nombre entre 0 et 290
+function random(){
+    return (Math.round((Math.random() * 290 /10 ))*10);
+}
 
+function createApple(){
+    applex = random();
+    appley = random();
 
+    // Creation en dehors du serpent
+    snake.forEach(function(piece){
+        if(piece.x == applex && piece.y == appley){
+            createApple();
+        }
+    })
+}
+
+function drawApple(){
+    contexte.fillStyle = "red";
+    contexte.strokeStyle = "darkred";
+
+    contexte.beginPath();
+    contexte.arc(applex +5 , appley + 5 , 5, 0, 2 * Math.PI);
+    contexte.fill();
+    contexte.stroke();
+}
