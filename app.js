@@ -12,19 +12,29 @@ let applex = 0;
 let appley = 0;
 // score
 let score = 0;
-
+// Bug direction
+let bugDirection = false;
+// StopGame
+let stopGame = false;
+// Serpent de départ
 let snake = [{x:140, y:150},{x:130, y:150},{x:120, y:150},{x:110, y:150}];
 
 function animation(){
+
+    if(stopGame === true){
+        return}
+    else{
     setTimeout(function(){
+        bugDirection = false;
         cleanCanvas();
         drawApple();
         moveForwardSnake();
-        drawSnake();
+
+         drawSnake();
         animation();
     },100)
-    
-}
+    }
+ }
 
 animation();
 createApple();
@@ -56,6 +66,13 @@ function moveForwardSnake() {
     const head = {x: snake[0].x + speedx, y: snake[0].y + speedy}
     snake.unshift(head);
 
+    if (endGame()){
+        snake.shift(head);
+        restart();
+        stopGame = true;
+        return;
+    }
+
     const snakeEatsApple = snake[0].x === applex && snake[0].y === appley;
     if (snakeEatsApple){
         score += 10;
@@ -72,6 +89,8 @@ document.addEventListener("keydown", changeDirection)
 
 function changeDirection(event){
     console.log(event);
+    if(bugDirection) return;
+    bugDirection = true;
 
     // Constante permettant d'éviter de faire un demi-tour
     const enTrainDeMonter = speedy === -10;    
@@ -122,3 +141,39 @@ function drawApple(){
     contexte.fill();
     contexte.stroke();
 }
+
+function endGame(){
+    let snakeBody = snake.slice(1);
+    let bitten = false;
+    let gameOver = false;
+
+    // Au cas où le serpent se morde
+    snakeBody.forEach(piece => {
+        if(piece.x === snake[0].x && piece.y === snake[0].y){
+            bitten = true;
+        }
+    })
+
+    // Au cas où le serpent touche un mur
+    const touchWallLeft = snake[0].x < -1;
+    const toucheWallRight = snake[0].x > canvas.width - 10;
+    const touchWallTop = snake[0].y < -1;
+    const toucheWallBottom = snake[0].y > canvas.height - 10;
+
+    if(bitten || touchWallLeft || toucheWallRight || touchWallTop || toucheWallBottom){
+        gameOver = true;
+    }
+
+    return gameOver;
+}
+
+function restart(){
+    const restart = document.getElementById("restart");
+    restart.style.visibility = "visible";
+    
+    document.addEventListener("keydown", (event) => {
+        if(event.code === "Space"){
+            document.location.reload();
+        }
+    })
+}     
